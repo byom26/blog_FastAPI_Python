@@ -21,16 +21,16 @@ def get_db():
         db.close()
 
 #-- Create a Blog Post
-@app.post('/blog', status_code=status.HTTP_201_CREATED)
+@app.post('/blog', status_code=status.HTTP_201_CREATED, tags=['blogs'])
 def create(request:schemas.Blog, db:Session=Depends(get_db)):
-    new_blog = models.Blog(title=request.title, body=request.body)
+    new_blog = models.Blog(title=request.title, body=request.body, userID=1)
     db.add(new_blog)
     db.commit()
     db.refresh(new_blog)
     return new_blog
 
 #-- Delete a Blog Post
-@app.delete('/blog/{id}', status_code=status.HTTP_202_ACCEPTED)
+@app.delete('/blog/{id}', status_code=status.HTTP_202_ACCEPTED, tags=['blogs'])
 def destroy(id, db:Session=Depends(get_db)):
     blog = db.query(models.Blog).filter(models.Blog.id == id)
     if not blog.first():
@@ -40,7 +40,7 @@ def destroy(id, db:Session=Depends(get_db)):
     return f'Blog with id {id} deleted successfully!'
 
 #-- Update a Blog Post
-@app.put('/blog/{id}', status_code=status.HTTP_202_ACCEPTED)
+@app.put('/blog/{id}', status_code=status.HTTP_202_ACCEPTED, tags=['blogs'])
 def update(id, request:schemas.Blog, db:Session=Depends(get_db)):
     blog = db.query(models.Blog).filter(models.Blog.id == id)
     if not blog.first():
@@ -50,13 +50,13 @@ def update(id, request:schemas.Blog, db:Session=Depends(get_db)):
     return "Blog updated successfully!"
 
 #-- Get all the Blog Posts
-@app.get('/blog', response_model=List[schemas.ShowBlog])
+@app.get('/blog', response_model=List[schemas.ShowBlog], tags=['blogs'])
 def all(db:Session=Depends(get_db)):
     blogs = db.query(models.Blog).all()
     return blogs
 
 #-- Get a Blog Post by its id
-@app.get('/blog/{id}', status_code=status.HTTP_200_OK, response_model=schemas.ShowBlog) #-- response_model is used to limit the data that will be shown to the user. More details can be found inside schemas.py file
+@app.get('/blog/{id}', status_code=status.HTTP_200_OK, response_model=schemas.ShowBlog, tags=['blogs']) #-- response_model is used to limit the data that will be shown to the user. More details can be found inside schemas.py file
 def show(id, response:Response, db:Session=Depends(get_db)):
     blog = db.query(models.Blog).filter(models.Blog.id == id).first()
     if not blog:
@@ -66,7 +66,7 @@ def show(id, response:Response, db:Session=Depends(get_db)):
     return blog
 
 #-- Create a new user
-@app.post('/user', response_model=schemas.ShowUser)
+@app.post('/user', response_model=schemas.ShowUser, tags=['users'])
 def create_user(request:schemas.User, db:Session=Depends(get_db)):
     new_user = models.User(name=request.name, email=request.email, password=hashPasswd(request.password))
     db.add(new_user)
@@ -75,7 +75,7 @@ def create_user(request:schemas.User, db:Session=Depends(get_db)):
     return new_user
 
 #-- Get the details of a users
-@app.get('/user/{id}', response_model=schemas.ShowUser)
+@app.get('/user/{id}', response_model=schemas.ShowUser, tags=['users'])
 def get_user(id:int, db:Session=Depends(get_db)):
     user = db.query(models.User).filter(models.User.id==id).first()
     if not user:
